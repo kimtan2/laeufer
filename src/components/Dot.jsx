@@ -2,7 +2,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { ROLE_META } from '../data/positions.js';
 import { PLAYERS } from '../data/players.js';
 
-function Dot({ role, x, y, onDrag }) {
+function Dot({ role, x, y, onDrag, isGlowing = false }) {
   const meta = ROLE_META[role];
   const dragRef = useRef(null);
   const [dragState, setDragState] = useState({ isDragging: false, startX: 0, startY: 0 });
@@ -52,7 +52,7 @@ function Dot({ role, x, y, onDrag }) {
   return (
     <div 
       ref={dragRef}
-      className={`dot ${meta.cls} ${dragState.isDragging ? 'dragging' : ''}`} 
+      className={`dot ${meta.cls} ${dragState.isDragging ? 'dragging' : ''} ${isGlowing ? 'glowing' : ''}`} 
       style={{ left:`${x}%`, top:`${y}%` }}
       onMouseDown={handleMouseDown}
     >

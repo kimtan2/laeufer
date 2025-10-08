@@ -14,11 +14,51 @@ function App() {
   const [l6Direction, setL6Direction] = useState("default"); // "default" or "reversed"
   const [gamePhase, setGamePhase] = useState("setup"); // "setup", "angabe", "annahme"
   const [showActionButtons, setShowActionButtons] = useState(false);
+  const [isZuspielReady, setIsZuspielReady] = useState(false);
+  const [glowingPlayers, setGlowingPlayers] = useState([]);
 
   // Get current positions - custom override or default
   const getCurrentPositions = () => {
     const key = `${rot}-${mode}`;
     return customPositions[key] || POS[rot][mode];
+  };
+
+  // Get modified positions for Zuspiel mode (all players to base except setter)
+  const getZuspielPositions = () => {
+    if (!isZuspielReady) return getCurrentPositions();
+    
+    const receivePositions = POS[rot]["receive"];
+    const basePositions = POS[rot]["base"];
+    const modifiedPositions = {};
+    
+    Object.keys(receivePositions).forEach(role => {
+      if (role === "S") {
+        // Setter stays in receive position
+        modifiedPositions[role] = receivePositions[role];
+      } else {
+        // All other players move to base positions
+        modifiedPositions[role] = basePositions[role];
+      }
+    });
+    
+    return modifiedPositions;
+  };
+
+  // Determine front row players (excluding setter) in Zuspiel state
+  const getFrontRowPlayers = () => {
+    const zuspielPositions = getZuspielPositions();
+    const frontRowPlayers = [];
+    
+    Object.entries(zuspielPositions).forEach(([role, pos]) => {
+      if (role !== "S" && pos.y < 45) { // Front row is top part (y < 45, more restrictive)
+        frontRowPlayers.push(role);
+      }
+    });
+    
+    console.log("Zuspiel positions:", zuspielPositions);
+    console.log("Front row players:", frontRowPlayers);
+    
+    return frontRowPlayers;
   };
 
   // Handle mode/rotation changes to track previous positions for path visualization
@@ -31,6 +71,8 @@ function App() {
 
   const handleRotChange = (newRot) => {
     setPreviousPositions({});
+    setIsZuspielReady(false);
+    setGlowingPlayers([]);
     setRot(newRot);
   };
 
@@ -68,7 +110,7 @@ function App() {
     });
   };
 
-  const coords = getCurrentPositions();
+  const coords = isZuspielReady ? getZuspielPositions() : getCurrentPositions();
 
   return (
     <div className="app">
@@ -142,6 +184,10 @@ function App() {
                 setGamePhase("angabe");
                 setMode("service");
                 setShowActionButtons(true);
+                setIsZuspielReady(false);
+                setGlowingPlayers([]);
+                setPreviousPositions({});
+                setShowPath(false);
               }}
             >
               Angabe
@@ -152,6 +198,10 @@ function App() {
                 setGamePhase("annahme");
                 setMode("receive");
                 setShowActionButtons(true);
+                setIsZuspielReady(false);
+                setGlowingPlayers([]);
+                setPreviousPositions({});
+                setShowPath(false);
               }}
             >
               Annahme
@@ -174,10 +224,25 @@ function App() {
                 </button>
               )}
               {gamePhase === "annahme" && (
-                <button className="btn-action">
+                <button 
+                  className="btn-action"
+                  onClick={() => {
+                    setPreviousPositions(getCurrentPositions());
+                    setShowPath(true);
+                    setIsZuspielReady(true);
+                    setGlowingPlayers(getFrontRowPlayers());
+                  }}
+                >
                   angenommen
                 </button>
               )}
+            </div>
+          )}
+
+          {/* Zuspiel bereit message in header area */}
+          {isZuspielReady && (
+            <div className="zuspiel-message-header">
+              Zuspiel bereit!
             </div>
           )}
         </>
@@ -195,6 +260,7 @@ function App() {
       <div className="stage">
         <div className="court">
           <div className="net"></div>
+
 
           {/* Path lines (dotted) showing previous positions */}
           {showPath && Object.keys(previousPositions).length > 0 && Object.entries(coords).map(([role, {x, y}]) => {
@@ -270,7 +336,14 @@ function App() {
           })}
 
           {Object.entries(coords).map(([role, {x,y}]) => (
-            <Dot key={role} role={role} x={x} y={y} onDrag={handleDrag} />
+            <Dot 
+              key={role} 
+              role={role} 
+              x={x} 
+              y={y} 
+              onDrag={handleDrag}
+              isGlowing={glowingPlayers.includes(role)}
+            />
           ))}
         </div>
       </div>
