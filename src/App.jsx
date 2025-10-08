@@ -30,9 +30,7 @@ function App() {
   };
 
   const handleRotChange = (newRot) => {
-    if (showPath) {
-      setPreviousPositions(getCurrentPositions());
-    }
+    setPreviousPositions({});
     setRot(newRot);
   };
 
