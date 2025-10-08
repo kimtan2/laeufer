@@ -165,9 +165,9 @@ function App() {
                 <button 
                   className="btn-action" 
                   onClick={() => {
-                    setMode("base");
-                    setShowPath(true);
                     setPreviousPositions(getCurrentPositions());
+                    setShowPath(true);
+                    setMode("base");
                   }}
                 >
                   Aufschlag machen
