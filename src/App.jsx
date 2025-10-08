@@ -10,6 +10,10 @@ function App() {
   const [showPath, setShowPath] = useState(false);
   const [previousPositions, setPreviousPositions] = useState({});
   const currentPositions = useRef({});
+  const [simulationMode, setSimulationMode] = useState(true);
+  const [l6Direction, setL6Direction] = useState("default"); // "default" or "reversed"
+  const [gamePhase, setGamePhase] = useState("setup"); // "setup", "angabe", "annahme"
+  const [showActionButtons, setShowActionButtons] = useState(false);
 
   // Get current positions - custom override or default
   const getCurrentPositions = () => {
@@ -73,6 +77,13 @@ function App() {
       <div className="hdr" style={{position: 'relative'}}>
         <h1>5–1 Läufer {rot.substring(1)} — Exact Positions</h1>
         
+        {/* Fire Toggle Button */}
+        <div className="fire-toggle" onClick={() => setSimulationMode(!simulationMode)}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill={simulationMode ? "#ff6b35" : "none"} stroke={simulationMode ? "#ff6b35" : "white"} strokeWidth="2">
+            <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
+          </svg>
+        </div>
+        
         {/* Settings Icon */}
         <div className="settings-icon" onClick={() => setShowDropdown(!showDropdown)}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
@@ -97,24 +108,91 @@ function App() {
               Show Path
             </label>
           </div>
+          <div className="dropdown-item" onClick={() => {
+            setL6Direction(l6Direction === "default" ? "reversed" : "default");
+            setShowDropdown(false);
+          }}>
+            <label style={{cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px'}}>
+              <input 
+                type="checkbox" 
+                checked={l6Direction === "reversed"} 
+                onChange={() => {}}
+                style={{margin: 0}}
+              />
+              L6 →
+            </label>
+          </div>
         </div>
       </div>
 
       <div className="bar">
+        <button className={`btn ${rot==="L2"?"active":""}`} onClick={()=>handleRotChange("L2")}>L2</button>
         <button className={`btn ${rot==="L1"?"active":""}`} onClick={()=>handleRotChange("L1")}>L1</button>
         <button className={`btn ${rot==="L6"?"active":""}`} onClick={()=>handleRotChange("L6")}>L6</button>
         <button className={`btn ${rot==="L5"?"active":""}`} onClick={()=>handleRotChange("L5")}>L5</button>
         <button className={`btn ${rot==="L4"?"active":""}`} onClick={()=>handleRotChange("L4")}>L4</button>
         <button className={`btn ${rot==="L3"?"active":""}`} onClick={()=>handleRotChange("L3")}>L3</button>
-        <button className={`btn ${rot==="L2"?"active":""}`} onClick={()=>handleRotChange("L2")}>L2</button>
       </div>
 
-      <div className="bar" style={{paddingTop:8}}>
-        <button className={`btn ${mode==="actual"?"active":""}`}  onClick={()=>handleModeChange("actual")}>Actual</button>
-        <button className={`btn ${mode==="service"?"active":""}`} onClick={()=>handleModeChange("service")}>Service</button>
-        <button className={`btn ${mode==="receive"?"active":""}`} onClick={()=>handleModeChange("receive")}>Serve Receive</button>
-        <button className={`btn ${mode==="base"?"active":""}`}    onClick={()=>handleModeChange("base")}>Base (Defense)</button>
-      </div>
+      {simulationMode && (
+        <>
+          {/* SubHeader with Angabe/Annahme buttons */}
+          <div className="subheader">
+            <button 
+              className={`btn-subheader ${gamePhase==="angabe"?"active":""}`} 
+              onClick={() => {
+                setGamePhase("angabe");
+                setMode("service");
+                setShowActionButtons(true);
+              }}
+            >
+              Angabe
+            </button>
+            <button 
+              className={`btn-subheader ${gamePhase==="annahme"?"active":""}`} 
+              onClick={() => {
+                setGamePhase("annahme");
+                setMode("receive");
+                setShowActionButtons(true);
+              }}
+            >
+              Annahme
+            </button>
+          </div>
+
+          {/* Action Buttons */}
+          {showActionButtons && (
+            <div className="action-buttons">
+              {gamePhase === "angabe" && (
+                <button 
+                  className="btn-action" 
+                  onClick={() => {
+                    setMode("base");
+                    setShowPath(true);
+                    setPreviousPositions(getCurrentPositions());
+                  }}
+                >
+                  Aufschlag machen
+                </button>
+              )}
+              {gamePhase === "annahme" && (
+                <button className="btn-action">
+                  angenommen
+                </button>
+              )}
+            </div>
+          )}
+        </>
+      )}
+
+      {!simulationMode && (
+        <div className="bar" style={{paddingTop:8}}>
+          <button className={`btn ${mode==="actual"?"active":""}`}  onClick={()=>handleModeChange("actual")}>Actual</button>
+          <button className={`btn ${mode==="service"?"active":""}`} onClick={()=>handleModeChange("service")}>Service</button>
+          <button className={`btn ${mode==="receive"?"active":""}`} onClick={()=>handleModeChange("receive")}>Serve Receive</button>
+          <button className={`btn ${mode==="base"?"active":""}`}    onClick={()=>handleModeChange("base")}>Base (Defense)</button>
+        </div>
+      )}
 
       <div className="stage">
         <div className="court">
