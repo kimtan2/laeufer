@@ -3,7 +3,7 @@ import Dot from './components/Dot.jsx';
 import { POS } from './data/positions.js';
 
 function App() {
-  const [rot, setRot] = useState("L1");
+  const [rot, setRot] = useState("L2");
   const [mode, setMode] = useState("actual");
   const [customPositions, setCustomPositions] = useState({});
   const [showDropdown, setShowDropdown] = useState(false);
@@ -12,7 +12,7 @@ function App() {
   const currentPositions = useRef({});
   const [simulationMode, setSimulationMode] = useState(true);
   const [l6Direction, setL6Direction] = useState("default"); // "default" or "reversed"
-  const [gamePhase, setGamePhase] = useState("setup"); // "setup", "angabe", "annahme"
+  const [gamePhase, setGamePhase] = useState("setup"); // "setup", "angabe", "annahme", "zuspiel_bereit", "abwehr"
   const [showActionButtons, setShowActionButtons] = useState(false);
   const [isZuspielReady, setIsZuspielReady] = useState(false);
   const [glowingPlayers, setGlowingPlayers] = useState([]);
@@ -87,6 +87,10 @@ function App() {
     setPreviousPositions({});
     setIsZuspielReady(false);
     setGlowingPlayers([]);
+    setGamePhase("setup"); // Reset to initial state
+    setShowActionButtons(false); // Hide action buttons
+    setMode("actual"); // Reset to default mode
+    setShowPath(false); // Hide path visualization
     setRot(newRot);
   };
 
@@ -127,19 +131,19 @@ function App() {
   const coords = isZuspielReady ? getZuspielPositions() : getCurrentPositions();
 
   return (
-    <div className="app">
-      <div className="hdr" style={{position: 'relative'}}>
-        <h1>5–1 Läufer {rot.substring(1)} — Exact Positions</h1>
+    <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
+      <div className="bg-gradient-to-br from-blue-500 to-purple-600 text-white py-3 px-4 text-center relative">
+        <h1 className="text-lg font-medium tracking-wide">5–1 Läufer {rot.substring(1)} — Exact Positions</h1>
         
         {/* Fire Toggle Button */}
-        <div className="fire-toggle" onClick={() => setSimulationMode(!simulationMode)}>
+        <div className="absolute top-4 right-12 cursor-pointer transition-transform duration-200 hover:scale-110" onClick={() => setSimulationMode(!simulationMode)}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill={simulationMode ? "#ff6b35" : "none"} stroke={simulationMode ? "#ff6b35" : "white"} strokeWidth="2">
             <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
           </svg>
         </div>
         
         {/* Settings Icon */}
-        <div className="settings-icon" onClick={() => setShowDropdown(!showDropdown)}>
+        <div className="absolute top-4 right-4 cursor-pointer" onClick={() => setShowDropdown(!showDropdown)}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
             <circle cx="12" cy="12" r="3"/>
             <path d="m12 1 1.09 3.09L16 5l-2 4 4-2 .91 3.09L22 12l-3.09 1.09L18 16l-4-2 2 4-3.09.91L12 22l-1.09-3.09L8 18l2-4-4 2-.91-3.09L2 12l3.09-1.09L6 8l4 2-2-4 3.09-.91z"/>
@@ -147,8 +151,8 @@ function App() {
         </div>
 
         {/* Dropdown Menu */}
-        <div className={`dropdown ${showDropdown ? 'active' : ''}`}>
-          <div className="dropdown-item" onClick={() => {
+        <div className={`absolute top-10 right-4 bg-white border border-gray-300 shadow-lg z-10 ${showDropdown ? 'block' : 'hidden'}`}>
+          <div className="py-2 px-3 cursor-pointer hover:bg-gray-100" onClick={() => {
             setShowPath(!showPath);
             setShowDropdown(false);
           }}>
@@ -162,7 +166,7 @@ function App() {
               Show Path
             </label>
           </div>
-          <div className="dropdown-item" onClick={() => {
+          <div className="py-2 px-3 cursor-pointer hover:bg-gray-100" onClick={() => {
             setL6Direction(l6Direction === "default" ? "reversed" : "default");
             setShowDropdown(false);
           }}>
@@ -179,44 +183,50 @@ function App() {
         </div>
       </div>
 
-      <div className="bar">
-        <button className={`btn ${rot==="L2"?"active":""}`} onClick={()=>handleRotChange("L2")}>L2</button>
-        <button className={`btn ${rot==="L1"?"active":""}`} onClick={()=>handleRotChange("L1")}>L1</button>
-        <button className={`btn ${rot==="L6"?"active":""}`} onClick={()=>handleRotChange("L6")}>L6</button>
-        <button className={`btn ${rot==="L5"?"active":""}`} onClick={()=>handleRotChange("L5")}>L5</button>
-        <button className={`btn ${rot==="L4"?"active":""}`} onClick={()=>handleRotChange("L4")}>L4</button>
-        <button className={`btn ${rot==="L3"?"active":""}`} onClick={()=>handleRotChange("L3")}>L3</button>
+      <div className="flex justify-center gap-2 p-3 border-b border-gray-200 bg-gray-50 flex-wrap">
+        <button className={`border-2 border-blue-500 ${rot==="L2"?"bg-blue-500 text-white":"bg-white text-blue-500"} px-4 py-2 rounded-full font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-200 hover:-translate-y-px hover:shadow-md`} onClick={()=>handleRotChange("L2")}>L2</button>
+        <button className={`border-2 border-blue-500 ${rot==="L1"?"bg-blue-500 text-white":"bg-white text-blue-500"} px-4 py-2 rounded-full font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-200 hover:-translate-y-px hover:shadow-md`} onClick={()=>handleRotChange("L1")}>L1</button>
+        <button className={`border-2 border-blue-500 ${rot==="L6"?"bg-blue-500 text-white":"bg-white text-blue-500"} px-4 py-2 rounded-full font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-200 hover:-translate-y-px hover:shadow-md`} onClick={()=>handleRotChange("L6")}>L6</button>
+        <button className={`border-2 border-blue-500 ${rot==="L5"?"bg-blue-500 text-white":"bg-white text-blue-500"} px-4 py-2 rounded-full font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-200 hover:-translate-y-px hover:shadow-md`} onClick={()=>handleRotChange("L5")}>L5</button>
+        <button className={`border-2 border-blue-500 ${rot==="L4"?"bg-blue-500 text-white":"bg-white text-blue-500"} px-4 py-2 rounded-full font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-200 hover:-translate-y-px hover:shadow-md`} onClick={()=>handleRotChange("L4")}>L4</button>
+        <button className={`border-2 border-blue-500 ${rot==="L3"?"bg-blue-500 text-white":"bg-white text-blue-500"} px-4 py-2 rounded-full font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-200 hover:-translate-y-px hover:shadow-md`} onClick={()=>handleRotChange("L3")}>L3</button>
       </div>
 
       {simulationMode && (
         <>
           {/* SubHeader with Angabe/Annahme buttons */}
-          <div className="subheader">
+          <div className="flex justify-center gap-5 p-4 border-b border-gray-200 bg-blue-50">
             <button 
-              className={`btn-subheader ${gamePhase==="angabe"?"active":""}`} 
+              className={`border-2 border-blue-500 ${gamePhase==="angabe"?"bg-blue-500 text-white":"bg-white text-blue-500"} ${(gamePhase==="annahme" || gamePhase==="zuspiel_bereit" || gamePhase==="abwehr")?"opacity-50 cursor-not-allowed":"cursor-pointer hover:-translate-y-0.5 hover:shadow-lg"} px-6 py-3 rounded-lg font-semibold text-base transition-all duration-200 min-w-[120px]`} 
               onClick={() => {
-                setGamePhase("angabe");
-                setMode("service");
-                setShowActionButtons(true);
-                setIsZuspielReady(false);
-                setGlowingPlayers([]);
-                setPreviousPositions({});
-                setShowPath(false);
+                if (gamePhase !== "annahme" && gamePhase !== "zuspiel_bereit" && gamePhase !== "abwehr") {
+                  setGamePhase("angabe");
+                  setMode("service");
+                  setShowActionButtons(true);
+                  setIsZuspielReady(false);
+                  setGlowingPlayers([]);
+                  setPreviousPositions({});
+                  setShowPath(false);
+                }
               }}
+              disabled={gamePhase === "annahme" || gamePhase === "zuspiel_bereit" || gamePhase === "abwehr"}
             >
               Angabe
             </button>
             <button 
-              className={`btn-subheader ${gamePhase==="annahme"?"active":""}`} 
+              className={`border-2 border-blue-500 ${gamePhase==="annahme"?"bg-blue-500 text-white":"bg-white text-blue-500"} ${(gamePhase==="angabe" || gamePhase==="zuspiel_bereit" || gamePhase==="abwehr")?"opacity-50 cursor-not-allowed":"cursor-pointer hover:-translate-y-0.5 hover:shadow-lg"} px-6 py-3 rounded-lg font-semibold text-base transition-all duration-200 min-w-[120px]`} 
               onClick={() => {
-                setGamePhase("annahme");
-                setMode("receive");
-                setShowActionButtons(true);
-                setIsZuspielReady(false);
-                setGlowingPlayers([]);
-                setPreviousPositions({});
-                setShowPath(false);
+                if (gamePhase !== "angabe" && gamePhase !== "zuspiel_bereit" && gamePhase !== "abwehr") {
+                  setGamePhase("annahme");
+                  setMode("receive");
+                  setShowActionButtons(true);
+                  setIsZuspielReady(false);
+                  setGlowingPlayers([]);
+                  setPreviousPositions({});
+                  setShowPath(false);
+                }
               }}
+              disabled={gamePhase === "angabe" || gamePhase === "zuspiel_bereit" || gamePhase === "abwehr"}
             >
               Annahme
             </button>
@@ -224,14 +234,15 @@ function App() {
 
           {/* Action Buttons */}
           {showActionButtons && (
-            <div className="action-buttons">
+            <div className="flex justify-center gap-3 p-3 bg-blue-100 border-b border-gray-200">
               {gamePhase === "angabe" && (
                 <button 
-                  className="btn-action" 
+                  className="border border-blue-600 text-blue-600 bg-white px-4 py-2 rounded-md font-medium cursor-pointer transition-all duration-200 hover:bg-blue-600 hover:text-white hover:-translate-y-px text-sm min-w-[140px]" 
                   onClick={() => {
                     setPreviousPositions(getCurrentPositions());
                     setShowPath(true);
                     setMode("base");
+                    setGamePhase("abwehr");
                   }}
                 >
                   Aufschlag machen
@@ -239,7 +250,7 @@ function App() {
               )}
               {gamePhase === "annahme" && (
                 <button 
-                  className="btn-action"
+                  className="border border-blue-600 text-blue-600 bg-white px-4 py-2 rounded-md font-medium cursor-pointer transition-all duration-200 hover:bg-blue-600 hover:text-white hover:-translate-y-px text-sm min-w-[140px]"
                   onClick={() => {
                     setPreviousPositions(getCurrentPositions());
                     setShowPath(true);
@@ -248,7 +259,8 @@ function App() {
                     const frontRow = calculateFrontRowPlayers();
                     console.log("Setting glowing players to:", frontRow);
                     
-                    // Now set state
+                    // Transition to zuspiel_bereit state
+                    setGamePhase("zuspiel_bereit");
                     setIsZuspielReady(true);
                     setGlowingPlayers(frontRow);
                   }}
@@ -256,31 +268,109 @@ function App() {
                   angenommen
                 </button>
               )}
+              {gamePhase === "zuspiel_bereit" && (
+                <>
+                  <button 
+                    className="border border-blue-600 text-blue-600 bg-white px-4 py-2 rounded-md font-medium cursor-pointer transition-all duration-200 hover:bg-blue-600 hover:text-white hover:-translate-y-px text-sm min-w-[160px]"
+                    onClick={() => {
+                      setPreviousPositions(getCurrentPositions());
+                      setShowPath(true);
+                      setMode("base");
+                      setGamePhase("abwehr");
+                      setIsZuspielReady(false);
+                      setGlowingPlayers([]);
+                    }}
+                  >
+                    zugespielt und geschlagen
+                  </button>
+                  <button 
+                    className="border border-red-600 text-red-600 bg-white px-4 py-2 rounded-md font-medium cursor-pointer transition-all duration-200 hover:bg-red-600 hover:text-white hover:-translate-y-px text-sm min-w-[140px]"
+                    onClick={() => {
+                      setPreviousPositions(getCurrentPositions());
+                      setShowPath(true);
+                      setMode("receive");
+                      setGamePhase("annahme");
+                      setIsZuspielReady(false);
+                      setGlowingPlayers([]);
+                    }}
+                  >
+                    den Punkt verloren
+                  </button>
+                </>
+              )}
+              {gamePhase === "abwehr" && (
+                <>
+                  <button 
+                    className="border border-blue-600 text-blue-600 bg-white px-4 py-2 rounded-md font-medium cursor-pointer transition-all duration-200 hover:bg-blue-600 hover:text-white hover:-translate-y-px text-sm min-w-[140px]"
+                    onClick={() => {
+                      setPreviousPositions(getCurrentPositions());
+                      setShowPath(true);
+                      
+                      // Calculate front row players BEFORE setting state
+                      const frontRow = calculateFrontRowPlayers();
+                      console.log("Setting glowing players to:", frontRow);
+                      
+                      // Transition back to zuspiel_bereit state - keep receive mode for zuspiel positions
+                      setMode("receive");
+                      setGamePhase("zuspiel_bereit");
+                      setIsZuspielReady(true);
+                      setGlowingPlayers(frontRow);
+                    }}
+                  >
+                    angenommen
+                  </button>
+                  <button 
+                    className="border border-red-600 text-red-600 bg-white px-4 py-2 rounded-md font-medium cursor-pointer transition-all duration-200 hover:bg-red-600 hover:text-white hover:-translate-y-px text-sm min-w-[140px]"
+                    onClick={() => {
+                      setPreviousPositions(getCurrentPositions());
+                      setShowPath(true);
+                      setMode("receive");
+                      setGamePhase("annahme");
+                      setIsZuspielReady(false);
+                      setGlowingPlayers([]);
+                    }}
+                  >
+                    Abwehr verkackt
+                  </button>
+                </>
+              )}
             </div>
           )}
         </>
       )}
 
       {!simulationMode && (
-        <div className="bar" style={{paddingTop:8}}>
-          <button className={`btn ${mode==="actual"?"active":""}`}  onClick={()=>handleModeChange("actual")}>Actual</button>
-          <button className={`btn ${mode==="service"?"active":""}`} onClick={()=>handleModeChange("service")}>Service</button>
-          <button className={`btn ${mode==="receive"?"active":""}`} onClick={()=>handleModeChange("receive")}>Serve Receive</button>
-          <button className={`btn ${mode==="base"?"active":""}`}    onClick={()=>handleModeChange("base")}>Base (Defense)</button>
+        <div className="flex justify-center gap-2 p-3 pt-4 border-b border-gray-200 bg-gray-50 flex-wrap">
+          <button className={`border-2 border-blue-500 ${mode==="actual"?"bg-blue-500 text-white":"bg-white text-blue-500"} px-4 py-2 rounded-full font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-200 hover:-translate-y-px hover:shadow-md`}  onClick={()=>handleModeChange("actual")}>Actual</button>
+          <button className={`border-2 border-blue-500 ${mode==="service"?"bg-blue-500 text-white":"bg-white text-blue-500"} px-4 py-2 rounded-full font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-200 hover:-translate-y-px hover:shadow-md`} onClick={()=>handleModeChange("service")}>Service</button>
+          <button className={`border-2 border-blue-500 ${mode==="receive"?"bg-blue-500 text-white":"bg-white text-blue-500"} px-4 py-2 rounded-full font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-200 hover:-translate-y-px hover:shadow-md`} onClick={()=>handleModeChange("receive")}>Serve Receive</button>
+          <button className={`border-2 border-blue-500 ${mode==="base"?"bg-blue-500 text-white":"bg-white text-blue-500"} px-4 py-2 rounded-full font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-200 hover:-translate-y-px hover:shadow-md`}    onClick={()=>handleModeChange("base")}>Base (Defense)</button>
         </div>
       )}
 
-      <div className="stage">
-        {/* Zuspiel bereit message card on right side */}
-        {isZuspielReady && (
-          <div className="zuspiel-message-card">
-            <div className="zuspiel-card-icon">⚡</div>
-            <div className="zuspiel-card-text">Zuspiel bereit!</div>
+      <div className="py-4 px-5 flex justify-center items-center bg-gradient-to-b from-blue-100 to-blue-200 min-h-[500px] max-h-[calc(100vh-320px)] overflow-hidden relative">
+        {/* State message cards */}
+        {gamePhase === "zuspiel_bereit" && (
+          <div className="absolute top-5 left-[90%] transform -translate-x-1/2 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl py-3 px-6 shadow-lg z-50 animate-slide-in-top flex items-center gap-3 border-2 border-white border-opacity-30">
+            <div className="text-3xl animate-pulse-icon">⚡</div>
+            <div className="font-bold text-lg tracking-wide text-center">Zuspiel bereit!</div>
+          </div>
+        )}
+        {gamePhase === "abwehr" && (
+          <div className="absolute top-5 left-[90%] transform -translate-x-1/2 bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl py-3 px-6 shadow-lg z-50 animate-slide-in-top flex items-center gap-3 border-2 border-white border-opacity-30">
+            <div className="text-3xl animate-pulse-icon">🛡️</div>
+            <div className="font-bold text-lg tracking-wide text-center">Für Abwehr bereit sein</div>
+          </div>
+        )}
+        {gamePhase === "annahme" && showActionButtons && (
+          <div className="absolute top-5 left-[90%] transform -translate-x-1/2 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl py-3 px-6 shadow-lg z-50 animate-slide-in-top flex items-center gap-3 border-2 border-white border-opacity-30">
+            <div className="text-3xl animate-pulse-icon">📥</div>
+            <div className="font-bold text-lg tracking-wide text-center">Für die Annahme bereit sein</div>
           </div>
         )}
 
-        <div className="court">
-          <div className="net"></div>
+        <div className="w-[min(680px,90vw)] h-[min(520px,calc(100vh-380px),calc(90vw*0.76))] bg-gradient-to-b from-blue-300 to-blue-400 border-6 border-blue-700 rounded-xl relative shadow-xl overflow-hidden">
+          <div className="absolute left-0 right-0 top-1/2 h-2 bg-red-600 transform -translate-y-1/2 z-10 shadow-lg shadow-red-600/35"></div>
 
 
           {/* Path lines (dotted) showing previous positions */}
@@ -369,7 +459,7 @@ function App() {
         </div>
       </div>
       
-      <button className="export-btn" onClick={exportPositions}>Export JSON</button>
+      <button className="fixed right-5 bottom-5 bg-blue-500 text-white border-none py-3 px-4 rounded-lg text-xs cursor-pointer z-[1000] font-semibold shadow-lg shadow-blue-500/30 transition-all duration-200 hover:bg-blue-600 hover:-translate-y-px hover:shadow-xl hover:shadow-blue-500/40" onClick={exportPositions}>Export JSON</button>
     </div>
   );
 }

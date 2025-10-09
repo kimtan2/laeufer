@@ -52,12 +52,12 @@ function Dot({ role, x, y, onDrag, isGlowing = false }) {
   return (
     <div 
       ref={dragRef}
-      className={`dot ${meta.cls} ${dragState.isDragging ? 'dragging' : ''} ${isGlowing ? 'glowing' : ''}`} 
+      className={`absolute w-16 h-16 rounded-full flex flex-col items-center justify-center font-black text-white tracking-wide border-4 border-white border-opacity-65 shadow-lg transform -translate-x-1/2 -translate-y-1/2 z-20 select-none transition-all duration-200 cursor-move ${meta.cls} ${dragState.isDragging ? 'scale-110 z-50 shadow-2xl' : 'hover:scale-105'} ${isGlowing ? 'glowing' : ''}`} 
       style={{ left:`${x}%`, top:`${y}%` }}
       onMouseDown={handleMouseDown}
     >
-      <div className="role">{PLAYERS[role]}</div>
-      <div className="tag">{role}</div>
+      <div className="text-lg leading-none">{PLAYERS[role]}</div>
+      <div className="text-xs mt-1 px-2 py-0.5 rounded-full bg-black bg-opacity-25">{role}</div>
     </div>
   );
 }
