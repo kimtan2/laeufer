@@ -21,7 +21,9 @@ function Dot({ role, x, y, onDrag, isGlowing = false }) {
   const handleMouseMove = useCallback((e) => {
     if (!dragState.isDragging) return;
     
-    const court = document.querySelector('.court');
+    const court = document.querySelector('.bg-gradient-to-b.from-blue-300');
+    if (!court) return;
+    
     const courtRect = court.getBoundingClientRect();
     
     const newX = ((e.clientX - courtRect.left) / courtRect.width) * 100;
@@ -52,8 +54,12 @@ function Dot({ role, x, y, onDrag, isGlowing = false }) {
   return (
     <div 
       ref={dragRef}
-      className={`absolute w-16 h-16 rounded-full flex flex-col items-center justify-center font-black text-white tracking-wide border-4 border-white border-opacity-65 shadow-lg transform -translate-x-1/2 -translate-y-1/2 z-20 select-none transition-all duration-200 cursor-move ${meta.cls} ${dragState.isDragging ? 'scale-110 z-50 shadow-2xl' : 'hover:scale-105'} ${isGlowing ? 'glowing' : ''}`} 
-      style={{ left:`${x}%`, top:`${y}%` }}
+      className={`absolute w-16 h-16 rounded-full flex flex-col items-center justify-center font-black text-white tracking-wide border-4 border-white border-opacity-65 shadow-lg z-20 select-none cursor-move position-transition ${meta.cls} ${dragState.isDragging ? 'dragging z-50 shadow-2xl' : ''} ${isGlowing ? 'glowing' : ''}`} 
+      style={{ 
+        left: `${x}%`, 
+        top: `${y}%`,
+        transform: 'translate(-50%, -50%)'
+      }}
       onMouseDown={handleMouseDown}
     >
       <div className="text-lg leading-none">{PLAYERS[role]}</div>

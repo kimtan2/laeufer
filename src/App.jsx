@@ -87,10 +87,16 @@ function App() {
     setPreviousPositions({});
     setIsZuspielReady(false);
     setGlowingPlayers([]);
-    setGamePhase("setup"); // Reset to initial state
-    setShowActionButtons(false); // Hide action buttons
-    setMode("actual"); // Reset to default mode
     setShowPath(false); // Hide path visualization
+    
+    // Only reset game state in simulation mode
+    if (simulationMode) {
+      setGamePhase("setup"); // Reset to initial state
+      setShowActionButtons(false); // Hide action buttons
+      setMode("actual"); // Reset to default mode
+    }
+    // In non-simulation mode, preserve the current mode
+    
     setRot(newRot);
   };
 

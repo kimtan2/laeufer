@@ -41,12 +41,37 @@
 
   @keyframes glow-jump {
     0%, 100% { 
-      transform: translateY(0) scale(1); 
+      transform: translate(-50%, -50%) translateY(0) scale(1); 
       box-shadow: 0 0 40px rgba(255, 215, 0, 1), 0 15px 30px rgba(0,0,0,.4);
     }
     50% { 
-      transform: translateY(-8px) scale(1.05); 
+      transform: translate(-50%, -50%) translateY(-8px) scale(1.05); 
       box-shadow: 0 0 50px rgba(255, 215, 0, 1), 0 25px 40px rgba(0,0,0,.3);
     }
   }
+}
+
+/* Smooth position transitions for player dots - outside @layer for priority */
+.position-transition {
+  transition: left 2.5s ease-in-out, top 2.5s ease-in-out, transform 0.2s ease-in-out !important;
+}
+
+/* Glowing players should not have transform transitions (animation takes over) */
+.position-transition.glowing {
+  transition: left 2.5s ease-in-out, top 2.5s ease-in-out !important;
+}
+
+/* Completely disable ALL transitions during drag */
+.dragging {
+  transition: none !important;
+}
+
+/* Hover effect - scale while maintaining center position */
+.position-transition:not(.dragging):hover {
+  transform: translate(-50%, -50%) scale(1.05) !important;
+}
+
+/* Dragging state - scale while maintaining center position */
+.position-transition.dragging {
+  transform: translate(-50%, -50%) scale(1.1) !important;
 }
