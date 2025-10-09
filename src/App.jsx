@@ -369,7 +369,7 @@ function App() {
           </div>
         )}
 
-        <div className="w-[min(680px,90vw)] h-[min(520px,calc(100vh-380px),calc(90vw*0.76))] bg-gradient-to-b from-blue-300 to-blue-400 border-6 border-blue-700 rounded-xl relative shadow-xl overflow-hidden">
+        <div className="w-[min(700px,90vw)] h-[min(550px,calc(100vh-380px),calc(90vw*0.76))] bg-gradient-to-b from-blue-300 to-blue-400 border-6 border-blue-700 rounded-xl relative shadow-xl overflow-hidden">
           <div className="absolute left-0 right-0 top-1/2 h-2 bg-red-600 transform -translate-y-1/2 z-10 shadow-lg shadow-red-600/35"></div>
 
 
@@ -453,7 +453,7 @@ function App() {
               x={x} 
               y={y} 
               onDrag={handleDrag}
-              isGlowing={glowingPlayers.includes(role)}
+              isGlowing={gamePhase === "zuspiel_bereit" ? role !== "S" : glowingPlayers.includes(role)}
             />
           ))}
         </div>
