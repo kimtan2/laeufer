@@ -45,18 +45,32 @@ function App() {
   };
 
   // Determine front row players (excluding setter) in Zuspiel state
-  const getFrontRowPlayers = () => {
-    const zuspielPositions = getZuspielPositions();
-    const frontRowPlayers = [];
+  // This version directly calculates without depending on isZuspielReady state
+  const calculateFrontRowPlayers = () => {
+    const receivePositions = POS[rot]["receive"];
+    const basePositions = POS[rot]["base"];
+    const zuspielPositions = {};
     
+    // Build zuspiel positions: base for all except setter who stays in receive
+    Object.keys(receivePositions).forEach(role => {
+      if (role === "S") {
+        zuspielPositions[role] = receivePositions[role];
+      } else {
+        zuspielPositions[role] = basePositions[role];
+      }
+    });
+    
+    const frontRowPlayers = [];
     Object.entries(zuspielPositions).forEach(([role, pos]) => {
-      if (role !== "S" && pos.y < 45) { // Front row is top part (y < 45, more restrictive)
+      // Front row is top half (y < 50)
+      if (role !== "S" && pos && pos.y < 50) {
         frontRowPlayers.push(role);
       }
     });
     
+    console.log("Current rotation:", rot);
     console.log("Zuspiel positions:", zuspielPositions);
-    console.log("Front row players:", frontRowPlayers);
+    console.log("Front row players detected:", frontRowPlayers);
     
     return frontRowPlayers;
   };
@@ -229,20 +243,19 @@ function App() {
                   onClick={() => {
                     setPreviousPositions(getCurrentPositions());
                     setShowPath(true);
+                    
+                    // Calculate front row players BEFORE setting state
+                    const frontRow = calculateFrontRowPlayers();
+                    console.log("Setting glowing players to:", frontRow);
+                    
+                    // Now set state
                     setIsZuspielReady(true);
-                    setGlowingPlayers(getFrontRowPlayers());
+                    setGlowingPlayers(frontRow);
                   }}
                 >
                   angenommen
                 </button>
               )}
-            </div>
-          )}
-
-          {/* Zuspiel bereit message in header area */}
-          {isZuspielReady && (
-            <div className="zuspiel-message-header">
-              Zuspiel bereit!
             </div>
           )}
         </>
@@ -258,6 +271,14 @@ function App() {
       )}
 
       <div className="stage">
+        {/* Zuspiel bereit message card on right side */}
+        {isZuspielReady && (
+          <div className="zuspiel-message-card">
+            <div className="zuspiel-card-icon">⚡</div>
+            <div className="zuspiel-card-text">Zuspiel bereit!</div>
+          </div>
+        )}
+
         <div className="court">
           <div className="net"></div>
 
